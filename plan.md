@@ -1,0 +1,3 @@
+- use socket.io for websockets
+- only one web page needed - index.html
+- use highstocks for graphing and markit on demand api for stock tickers
