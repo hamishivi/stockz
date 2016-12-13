@@ -28,8 +28,9 @@ $(document).ready(function () {
     } else {
         createChart();
     }
-    $(".delete").on('click', function() {
+    $(document).on('click', '.delete', function() {
     var name = $(this).attr('id');
+    console.log("deleting "+name)
     for (var i = 0; i < chart.series.length; i++) {
         if (name == chart.series[i].name.toLowerCase()) {
             chart.series[i].remove();
@@ -55,7 +56,7 @@ $('#add').click(function() {
 function getSeries(ticker, callback) {
     var start_date ='2016-01-01';
     var end_date = '2016-12-07';
-    var url = "https://www.quandl.com/api/v3/datasets/WIKI/"+ticker+".json?column_index=4&start_date="+start_date+"&end_date="+end_date+"&collapse=daily&api_key=YOURKEYHEREs";
+    var url = "https://www.quandl.com/api/v3/datasets/WIKI/"+ticker+".json?column_index=4&start_date="+start_date+"&end_date="+end_date+"&collapse=daily&api_key=YOURKEYHERE";
     $.get(url, function(data) {
         var tickerdata = [];
         $.each(data.dataset.data, function(i, element) {
@@ -127,7 +128,7 @@ function addCard(name, ticker) {
                     '<div class="card-content white-text">' +
                       ' <span class="card-title">'+ticker.toUpperCase()+'</span>' +
                       '<p>' + name + '</p>' +
-                      '<p class="right"><i class="material-icons red-text delete" id="'+ticker.toLowerCase()+'">delete</i></p><br>' +
+                      '<span class="right"><i class="material-icons red-text delete" id="'+ticker.toLowerCase()+'">delete</i></span><br>' +
                     '</div>'+
                 '</div>' +
             '</div>'
