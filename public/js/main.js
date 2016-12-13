@@ -1,62 +1,69 @@
 var chart;
 var names = []
 var seriesOptions = [];
+var socket = io();
+
 $(document).ready(function () {
-    $("#error").hide();
-    var seriesCounter = 0;
-    
+    $.get('/curlist', function(data) {
+        names = data;
+        finishSetup();
+    });
+    function finishSetup() {
+        var seriesCounter = 0;
     if (names.length > 0) {
         $.each(names, function (i, name) {
-            $.getJSON('https://www.highcharts.com/samples/data/jsonp.php?filename=' + name.toLowerCase() + '-c.json&callback=?',    function (data) {
-
-                seriesOptions[i] = {
-                    name: name,
-                    data: data
-                };
-
+            getSeries(name, function(data) {
+                chart.addSeries(data, true, true);
+                chart.xAxis[0].setExtremes();
+            });
                 // As we're loading the data asynchronously, we don't know what order it will arrive. So
                 // we keep a counter and create the chart when all the data is loaded.
                 seriesCounter += 1;
-
                 if (seriesCounter === names.length) {
                     createChart();
                     chart.xAxis[0].setExtremes();
-                
                 }
-            });
-        });
+        })
     } else {
         createChart();
     }
     $(document).on('click', '.delete', function() {
-    var name = $(this).attr('id');
-    console.log("deleting "+name)
+        var name = $(this).attr('id');
+        $.get('/removestock/' + name);
+        socket.emit('delete', name);
+    });
+    }
+});
+
+function delet(name) {
     for (var i = 0; i < chart.series.length; i++) {
         if (name == chart.series[i].name.toLowerCase()) {
             chart.series[i].remove();
             $("#" + name).remove();
         }
     }
-})
+}
+
+$('#add').off().on('click', function() {
+    event.stopPropagation();
+    $("#error").text("");
+    var ticker = $("#stock").val();
+    validTicker(ticker, function(valid) {
+        if (valid) {
+             $("#stock").val("")
+            socket.emit('ticker', ticker);
+            $.get('/addstock/' + ticker);
+        } else {
+           
+        }
+    });
 });
 
-$('#add').click(function() {
-    $("#error").hide();
-    var ticker = $("#stock").val();
-    if (validTicker(ticker)) {
-        getSeries(ticker, function(data) {
-                chart.addSeries(data, true, true);
-                chart.xAxis[0].setExtremes();
-        });
-    } else {
-        $("#error").show();
-    }
-})
-
 function getSeries(ticker, callback) {
+    var curDate = new Date().toJSON().slice(0,10);
     var start_date ='2016-01-01';
-    var end_date = '2016-12-07';
-    var url = "https://www.quandl.com/api/v3/datasets/WIKI/"+ticker+".json?column_index=4&start_date="+start_date+"&end_date="+end_date+"&collapse=daily&api_key=YOURKEYHERE";
+    var end_date = curDate;
+    var url = "https://www.quandl.com/api/v3/datasets/WIKI/"+ticker+".json?column_index=4&end_date="+end_date+"&collapse=daily&api_key=xZPeXmNG_WhuR9F95m8S";
     $.get(url, function(data) {
         var tickerdata = [];
         $.each(data.dataset.data, function(i, element) {
@@ -76,8 +83,18 @@ function getSeries(ticker, callback) {
 }
 
 // TODO: write a checker, preferably using a callback
-function validTicker(ticker) {
-    return true;
+function validTicker(ticker, callback) {
+    if ($("#"+ticker).length) {
+        callback(false);
+        return;
+    }
+    var url = "https://www.quandl.com/api/v3/datasets/WIKI/"+ticker+".json?column_index=4&collapse=daily&api_key=xZPeXmNG_WhuR9F95m8S";
+    $.get(url, function(data) {
+        callback(true);
+    }).fail(function(e) {
+         $("#error").text("Could not find that ticker symbol");
+        callback(false);
+    });
 }
 
 function createChart() {
@@ -135,3 +152,13 @@ function addCard(name, ticker) {
     $("#stockContainer").prepend(string);
 }
 
+socket.on('ticker', function(ticker){
+        getSeries(ticker, function(data) {
+                chart.addSeries(data, true, true);
+                chart.xAxis[0].setExtremes();
+        });
+});
+
+socket.on('delete', function(ticker){
+        delet(ticker);
+});

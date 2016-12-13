@@ -24,7 +24,7 @@
                         <label for="stock">Add a Stock Code</label>
                       </div>
                       <a class="btn black" id="add">Add</a>
-                      <span id="error">Could not find that ticker symbol</span>
+                      <span id="error" class="red-text"></span>
                     </div>
                 </div>
             </div>
@@ -32,6 +32,7 @@
         </div>
 
         <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+        <script src="/socket.io/socket.io.js"></script>
         <script src="https://code.highcharts.com/stock/highstock.js"></script>
         <script type="text/javascript" src="public/js/dark-unica.js"></script>
         <script type="text/javascript" src="public/js/materialize.js"></script>
