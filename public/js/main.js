@@ -36,10 +36,10 @@ $(document).ready(function () {
 });
 
 function delet(name) {
+    $("#" + name).remove();
     for (var i = 0; i < chart.series.length; i++) {
         if (name == chart.series[i].name.toLowerCase()) {
             chart.series[i].remove();
-            $("#" + name).remove();
         }
     }
 }
@@ -47,10 +47,10 @@ function delet(name) {
 $('#add').off().on('click', function() {
     event.stopPropagation();
     $("#error").text("");
-    var ticker = $("#stock").val();
+    var ticker = $("#stock").val().toUpperCase();
     validTicker(ticker, function(valid) {
         if (valid) {
-             $("#stock").val("")
+            $("#stock").val("");
             socket.emit('ticker', ticker);
             $.get('/addstock/' + ticker);
         } else {
@@ -82,7 +82,7 @@ function getSeries(ticker, callback) {
     });
 }
 
-// TODO: write a checker, preferably using a callback
+
 function validTicker(ticker, callback) {
     if ($("#"+ticker).length) {
         callback(false);
@@ -98,17 +98,13 @@ function validTicker(ticker, callback) {
 }
 
 function createChart() {
-
         chart = Highcharts.stockChart('container', {
-
             rangeSelector: {
                 selected: 1
             },
-            
             title: {
                 text: 'Stockz'
             },
-
             yAxis: {
                 labels: {
                     formatter: function () {
@@ -121,26 +117,24 @@ function createChart() {
                     color: 'silver'
                 }]
             },
-
             plotOptions: {
                 series: {
                     compare: 'percent',
                     showInNavigator: true
                 }
             },
-
             tooltip: {
                 pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.y}</b> ({point.change}%)<br/>',
                 valueDecimals: 2,
                 split: true
             },
-
             series: seriesOptions
         });
     }
 
+// Yeah this is gross. Using React would make this much better.
 function addCard(name, ticker) {
-    var string = '<div class="col s12 m4 l3" id="'+ticker+'">' +
+    var string = '<div class="col s12 m4 l3" id="'+ticker.toLowerCase()+'">' +
                 '<div class="card blue-grey darken-1">' +
                     '<div class="card-content white-text">' +
                       ' <span class="card-title">'+ticker.toUpperCase()+'</span>' +
